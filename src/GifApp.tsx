@@ -1,15 +1,16 @@
 import { SearchBar } from "./shared/components/SearchBar"
-import { mockGifs} from "./mock-data/gifs.mock"
 import { CustomHeader } from "./shared/components/CustomHeader"
 import { PreviousSearches } from "./gifs/components/PreviousSearches"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { GifList } from "./gifs/components/GifList"
 import { getGifsByQuery } from "./gifs/actions/get-gifs-by-query.action"
+import { Gif } from "./gifs/interfaces/gif.interface"
 
 export const GifApp = () => {
 
     const [searchList, setSearchList] = useState<string[]>([]);
-    //useEffect(() => {console.log(searchList);}, [searchList]);
+    
+    const [gifList, setGifList] = useState<Gif[]>([]);
 
 
     const handleSearch = async (searchTerm: string) => {
@@ -22,8 +23,14 @@ export const GifApp = () => {
                 setSearchList((list) => [...list.slice(1), searchTerm]);
             }
             const response = await getGifsByQuery(import.meta.env.VITE_GIF_API_KEY, searchTerm, 10, "es");
-            console.log(response);
+            console.log(response)
+            setGifList(response);
         }
+    }
+
+    const onPreviousSearchesClicked = async (certainSearch: string) => {
+        const response = await getGifsByQuery(import.meta.env.VITE_GIF_API_KEY, certainSearch, 10, "es");
+        setGifList(response);
     }
 
   return (
@@ -43,13 +50,11 @@ export const GifApp = () => {
         {/* Busquedas Previas */}
         <PreviousSearches 
             previousSearches={searchList}
-            onLabelClicked={(certainSearch) => {
-                setSearchList((list) => (list.filter((item) => (item !== certainSearch))))
-            }}
+            onLabelClicked={(certainSearch) => onPreviousSearchesClicked(certainSearch)}
         ></PreviousSearches>
 
         {/* Gifs */}
-        <GifList gifList={mockGifs}></GifList>
+        <GifList gifList={gifList}></GifList>
     </>
   )
 }
